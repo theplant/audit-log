@@ -9,18 +9,26 @@ import (
 	wmill "github.com/windmill-labs/windmill-go-client"
 )
 
+type Result struct {
+	Logs             []schema.LogEvent
+	LastLogTimestamp string
+	From             string
+	To               string
+}
+
 // FetchAndUpdateState handles the common Windmill logic for fetching logs and managing state
-func FetchAndUpdateState(fetcher schema.LogFetcher) ([]schema.LogEvent, error) {
+func FetchAndUpdateState(fetcher schema.LogFetcher) (Result, error) {
 	from := time.Now().Add(-time.Hour * 1)
 
 	lastSeen, err := wmill.GetState()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get windmill state: %w", err)
+		return Result{}, fmt.Errorf("failed to get windmill state: %w", err)
 	}
+
 	if lastSeen != "" {
 		from, err = time.Parse(time.RFC3339Nano, lastSeen.(string))
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse last seen %s: %w", lastSeen, err)
+			return Result{}, fmt.Errorf("failed to parse last seen %s: %w", lastSeen, err)
 		}
 	}
 
@@ -28,14 +36,20 @@ func FetchAndUpdateState(fetcher schema.LogFetcher) ([]schema.LogEvent, error) {
 
 	logs, err := fetcher.FetchLogs(context.Background(), from, to)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch logs: %w", err)
+		return Result{}, fmt.Errorf("failed to fetch logs: %w", err)
 	}
 
 	if len(logs) > 0 {
-		wmill.SetState(logs[len(logs)-1].Timestamp.Format(time.RFC3339Nano))
+		lastSeen = logs[len(logs)-1].Timestamp.Format(time.RFC3339Nano)
+		wmill.SetState(lastSeen)
 	}
 
-	return logs, nil
+	return Result{
+		Logs:             logs,
+		LastLogTimestamp: lastSeen.(string),
+		From:             from.Format(time.RFC3339Nano),
+		To:               to.Format(time.RFC3339Nano),
+	}, nil
 }
 
 // import (
