@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"slices"
 	"time"
 
 	"github.com/theplant/audit-log/schema"
@@ -48,6 +49,9 @@ func (f *JiraFetcher) FetchLogs(ctx context.Context, from, to time.Time) ([]sche
 
 		offset += limit
 	}
+
+	// Reverse the events to get chronological order
+	slices.Reverse(allEvents)
 
 	return allEvents, nil
 }

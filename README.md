@@ -101,3 +101,25 @@ A system that fetches, transforms, and routes audit logs from multiple SaaS plat
 - Advanced analytics
 - Custom plugin framework
 - Horizontal scaling
+
+## Log Fetcher Requirements
+
+### Data Ordering
+Log fetchers must return events in chronological order (oldest first). This is important for:
+1. Consistent processing of events
+2. Correct state management in Windmill scripts
+3. Reliable incremental fetching
+
+For example, if fetching logs from 1:00 PM to 2:00 PM:
+```
+[
+  {timestamp: "1:00:00", ...},
+  {timestamp: "1:00:05", ...},
+  {timestamp: "1:15:30", ...},
+  {timestamp: "1:59:59", ...}
+]
+```
+
+This ordering requirement applies both to:
+- Events within a single page of results
+- Events across multiple pages when pagination is used

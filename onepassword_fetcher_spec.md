@@ -116,4 +116,20 @@ onepassword:
   rate_limit: 100  # Requests per minute
   fetch_interval: "5m"  # How often to check for new events
   lookback_window: "24h"  # How far back to fetch events on startup
-``` 
+```
+
+## Data Ordering
+The 1Password Events API returns events in chronological order (oldest first), which matches the system requirements. No additional sorting or reversal is needed.
+
+For example, when fetching events from 1:00 PM to 2:00 PM, the API returns:
+```json
+{
+  "items": [
+    {"timestamp": "2024-01-01T13:00:00Z", ...},
+    {"timestamp": "2024-01-01T13:15:00Z", ...},
+    {"timestamp": "2024-01-01T13:45:00Z", ...}
+  ]
+}
+```
+
+This ordering is maintained across pagination, with each subsequent page containing events that are newer than the previous page. 

@@ -159,4 +159,14 @@ jira:
 - Batch processing for large result sets
 - State management for incremental fetching
 - Logging and monitoring
-- Error reporting and alerting 
+- Error reporting and alerting
+
+## Data Ordering
+The Jira API returns events in reverse chronological order (newest first), but our fetcher must return events in chronological order (oldest first) to match the system requirements.
+
+The fetcher handles this by:
+1. Collecting all pages of results
+2. Reversing the final array before returning
+3. Ensuring events within each page are also sorted chronologically
+
+This ensures consumers receive events in the correct order for processing. 
