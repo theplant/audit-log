@@ -32,7 +32,7 @@ func FetchAndUpdateState(fetcher schema.LogFetcher) ([]schema.LogEvent, error) {
 	}
 
 	if len(logs) > 0 {
-		wmill.SetState(logs[0].Timestamp.Format(time.RFC3339Nano))
+		wmill.SetState(logs[len(logs)-1].Timestamp.Format(time.RFC3339Nano))
 	}
 
 	return logs, nil
