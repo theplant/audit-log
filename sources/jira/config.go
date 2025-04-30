@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-// JiraConfig holds the Jira source configuration
-type JiraConfig struct {
+// Config represents the configuration for Jira audit log fetching
+type Config struct {
 	BaseURL     string
 	Username    string
 	Password    string
@@ -16,19 +16,19 @@ type JiraConfig struct {
 	FetchWindow time.Duration
 }
 
-// NewConfigFromEnv creates a new JiraConfig from environment variables
-func NewConfigFromEnv() *JiraConfig {
-	return &JiraConfig{
-		BaseURL:     getEnvOrDefault("JIRA_BASE_URL", ""),
-		Username:    getEnvOrDefault("JIRA_USERNAME", ""),
-		Password:    getEnvOrDefault("JIRA_PASSWORD", ""),
-		RateLimit:   getEnvIntOrDefault("JIRA_RATE_LIMIT", 100),
-		FetchWindow: getEnvDurationOrDefault("JIRA_FETCH_WINDOW", 24*time.Hour),
+// NewConfigFromEnv creates a new Config from environment variables
+func NewConfigFromEnv() *Config {
+	return &Config{
+		BaseURL:     os.Getenv("JIRA_BASE_URL"),
+		Username:    os.Getenv("JIRA_USERNAME"),
+		Password:    os.Getenv("JIRA_PASSWORD"),
+		RateLimit:   getEnvAsInt("JIRA_RATE_LIMIT", 100),
+		FetchWindow: getEnvAsDuration("JIRA_FETCH_WINDOW", 24*time.Hour),
 	}
 }
 
 // Validate checks if the configuration is valid
-func (c *JiraConfig) Validate() error {
+func (c *Config) Validate() error {
 	if c.BaseURL == "" {
 		return fmt.Errorf("JIRA_BASE_URL is required")
 	}
@@ -59,6 +59,24 @@ func getEnvIntOrDefault(key string, defaultValue int) int {
 }
 
 func getEnvDurationOrDefault(key string, defaultValue time.Duration) time.Duration {
+	if value := os.Getenv(key); value != "" {
+		if duration, err := time.ParseDuration(value); err == nil {
+			return duration
+		}
+	}
+	return defaultValue
+}
+
+func getEnvAsInt(key string, defaultValue int) int {
+	if value := os.Getenv(key); value != "" {
+		if intValue, err := strconv.Atoi(value); err == nil {
+			return intValue
+		}
+	}
+	return defaultValue
+}
+
+func getEnvAsDuration(key string, defaultValue time.Duration) time.Duration {
 	if value := os.Getenv(key); value != "" {
 		if duration, err := time.ParseDuration(value); err == nil {
 			return duration

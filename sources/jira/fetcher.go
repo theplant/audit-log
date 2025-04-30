@@ -14,13 +14,13 @@ import (
 
 // JiraFetcher implements the log fetching for Jira audit logs
 type JiraFetcher struct {
-	config     *JiraConfig
+	config     *Config
 	httpClient *http.Client
 	enricher   *UserEnricher
 }
 
 // NewFetcher creates a new JiraFetcher instance
-func NewFetcher(config *JiraConfig) *JiraFetcher {
+func NewFetcher(config *Config) *JiraFetcher {
 	return &JiraFetcher{
 		config:     config,
 		httpClient: &http.Client{Timeout: 30 * time.Second},

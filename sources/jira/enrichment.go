@@ -48,13 +48,13 @@ func (c *UserCache) Set(userKey string, user UserInfo) {
 
 // UserEnricher handles fetching and enriching user information
 type UserEnricher struct {
-	config     *JiraConfig
+	config     *Config
 	httpClient *http.Client
 	cache      *UserCache
 }
 
 // NewUserEnricher creates a new UserEnricher instance
-func NewUserEnricher(config *JiraConfig) *UserEnricher {
+func NewUserEnricher(config *Config) *UserEnricher {
 	return &UserEnricher{
 		config: config,
 		httpClient: &http.Client{
