@@ -2,7 +2,6 @@ package windmill
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -11,17 +10,17 @@ import (
 )
 
 // FetchAndUpdateState handles the common Windmill logic for fetching logs and managing state
-func FetchAndUpdateState(fetcher schema.LogFetcher) (string, error) {
+func FetchAndUpdateState(fetcher schema.LogFetcher) ([]schema.LogEvent, error) {
 	from := time.Now().Add(-time.Hour * 1)
 
 	lastSeen, err := wmill.GetState()
 	if err != nil {
-		return "", fmt.Errorf("failed to get windmill state: %w", err)
+		return nil, fmt.Errorf("failed to get windmill state: %w", err)
 	}
 	if lastSeen != "" {
 		from, err = time.Parse(time.RFC3339Nano, lastSeen.(string))
 		if err != nil {
-			return "", fmt.Errorf("failed to parse last seen %s: %w", lastSeen, err)
+			return nil, fmt.Errorf("failed to parse last seen %s: %w", lastSeen, err)
 		}
 	}
 
@@ -29,15 +28,14 @@ func FetchAndUpdateState(fetcher schema.LogFetcher) (string, error) {
 
 	logs, err := fetcher.FetchLogs(context.Background(), from, to)
 	if err != nil {
-		return "", fmt.Errorf("failed to fetch logs: %w", err)
+		return nil, fmt.Errorf("failed to fetch logs: %w", err)
 	}
 
 	if len(logs) > 0 {
 		wmill.SetState(logs[0].Timestamp.Format(time.RFC3339Nano))
 	}
 
-	str, err := json.Marshal(logs)
-	return string(str), err
+	return logs, nil
 }
 
 // import (
