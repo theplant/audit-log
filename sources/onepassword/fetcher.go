@@ -65,7 +65,7 @@ type AuditEvent struct {
 
 // FetchLogs retrieves audit events from 1Password Events API
 func (f *Fetcher) FetchLogs(ctx context.Context, from, to time.Time) ([]schema.LogEvent, error) {
-	var allEvents []schema.LogEvent
+	allEvents := []schema.LogEvent{} // start with empty array to avoid returning nil
 	cursor := ""
 	seenCursors := make(map[string]bool)
 	pageCount := 0
